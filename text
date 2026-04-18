@@ -1,0 +1,48 @@
+🏛️ The "Campus Echoes" Generation Prompt
+System Role: You are an expert Front-end Developer specializing in immersive, minimalist storytelling interfaces.
+
+Task: Create a single-file "Campus Memories Map" interactive webpage for Bansal Institute of Science & Technology (BIST), Bhopal.
+
+Design Requirements:
+
+Aesthetic: Dark-themed "Midnight" UI with a Glassmorphism finish. Use a background noise/grain texture, deep blacks (#020202), and subtle radial glows behind the main map.
+
+Hero Section:
+
+A minimalist header with a pulsing status dot (red/green).
+
+Large, elegant typography using "Inter" or "Outfit" with italicized emphasis for the word "Memories."
+
+A "Scroll to Explore" indicator with a vertical animated line.
+
+The Interactive Map:
+
+Display a provided aerial image of the campus in a card with a subtle border-glow.
+
+Place 4 interactive "Pins" using absolute positioning.
+
+Pin Mechanics: The pins should pulse (CSS scale animation) and include a teardrop shape or a location icon. On hover, show a tooltip label (e.g., "Central Library").
+
+The Memory Interaction:
+
+When a pin is clicked, trigger a Modal Overlay with a backdrop blur (backdrop-filter: blur(12px)).
+
+The modal must contain: A location-specific photo (top), a Title, a Subtitle, a short nostalgic description, and a "Mood Badge" (e.g., "Mood: Emotional" with color coding).
+
+Gamification & UX:
+
+Add a "Discovery Counter" (e.g., "0/4 Memories Found").
+
+Include a Toast Notification system that pops up when a user finds a new location or completes the map.
+
+Smooth entry animations (Reveal on scroll) for the sections.
+
+Technical Requirements:
+
+Use only a single HTML file (CSS in <style>, JS in <script>).
+
+Focus on accessibility (Keyboard navigation for pins, ARIA labels).
+
+Ensure mobile responsiveness (stack stats, scale map pins for touch).
+
+Use CSS variables for colors (Red for ground, Blue for Library, Orange for Canteen).

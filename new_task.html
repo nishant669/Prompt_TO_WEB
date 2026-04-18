@@ -1,0 +1,509 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>💀 Deadline Graveyard — Interactive Routes</title>
+  <link href="https://fonts.googleapis.com/css2?family=Creepster&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    /* ---------- RESET & VARIABLES ---------- */
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg: #050408;
+      --bg-card: #120e18;
+      --stone: #1e1a2a;
+      --stone-light: #2a2538;
+      --purple: #8b5cf6;
+      --purple-dim: #5b21b6;
+      --purple-glow: rgba(139, 92, 246, 0.3);
+      --green: #10b981;
+      --green-glow: rgba(16, 185, 129, 0.3);
+      --text: #e2e8f0;
+      --text-dim: #94a3b8;
+      --red: #ef4444;
+      --red-glow: rgba(239, 68, 68, 0.3);
+    }
+
+    body {
+      font-family: 'Inter', sans-serif; background: var(--bg); color: var(--text);
+      overflow-x: hidden; line-height: 1.6; user-select: none;
+    }
+
+    ::-webkit-scrollbar { width: 6px; }
+    ::-webkit-scrollbar-track { background: var(--bg); }
+    ::-webkit-scrollbar-thumb { background: #334; border-radius: 3px; }
+
+    /* ---------- AUDIO & ATMOSPHERE ---------- */
+    #lightning { position: fixed; inset: 0; background: #fff; opacity: 0; z-index: 900; pointer-events: none; }
+    .moon { position: fixed; top: 30px; right: 40px; width: 80px; height: 80px; background: radial-gradient(circle at 35% 35%, #fff, #fde68a, #78350f); border-radius: 50%; box-shadow: 0 0 60px rgba(253, 230, 138, 0.2); z-index: -1; }
+    .ground-fog { position: fixed; bottom: 0; left: 0; right: 0; height: 30vh; background: linear-gradient(to top, rgba(5,4,8,1), transparent); pointer-events: none; z-index: 2; }
+    .bat-ambient, .ghost-ambient { position: fixed; pointer-events: none; z-index: 2; opacity: 0; font-size: 1.5rem; }
+
+    /* ---------- INTRO OVERLAY ---------- */
+    #intro { position: fixed; inset: 0; z-index: 1000; background: radial-gradient(circle at 50% 30%, #11091c 0%, #050408 100%); display: flex; align-items: center; justify-content: center; transition: opacity 0.9s ease, visibility 0.9s; }
+    #intro.hidden { opacity: 0; visibility: hidden; pointer-events: none; }
+    .intro-skull { position: absolute; pointer-events: none; font-size: 1.5rem; opacity: 0.15; animation: floatSkull 6s infinite alternate; }
+    @keyframes floatSkull { 0% { transform: translate(0, 0) rotate(0deg); } 100% { transform: translate(30px, -25px) rotate(8deg); } }
+
+    #intro-tomb { width: 280px; height: 360px; background: linear-gradient(145deg, #2c2338, #171122); border-radius: 50% 50% 8px 8px / 32% 32% 8px 8px; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; box-shadow: 0 30px 70px rgba(0,0,0,0.9), 0 0 100px var(--purple-glow); border: 1px solid rgba(255,255,255,0.08); animation: tombDrop 1s cubic-bezier(0.22, 1, 0.36, 1) forwards; transform: translateY(-120vh); }
+    @keyframes tombDrop { 100% { transform: translateY(0) rotate(0deg); } }
+    .rip { font-family: 'Creepster', cursive; font-size: 2.8rem; color: var(--red); text-shadow: 0 0 18px var(--red-glow); opacity: 0; animation: fadeUp 0.5s ease 0.8s forwards; }
+    .grave-title { font-family: 'Creepster', cursive; font-size: 1.7rem; letter-spacing: 2px; margin-top: 0.4rem; opacity: 0; animation: fadeUp 0.5s ease 1.2s forwards; }
+    .grave-sub { font-size: 0.7rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 3px; margin-top: 1rem; opacity: 0; animation: fadeUp 0.5s ease 1.6s forwards; }
+    .skip-hint { position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%); font-size: 0.8rem; color: rgba(255,255,255,0.4); text-transform: uppercase; letter-spacing: 3px; cursor: pointer; opacity: 0; animation: fadeUp 0.6s ease 2s forwards; font-weight: bold; }
+    .skip-hint:hover { color: #fff; text-shadow: 0 0 10px #fff; }
+    @keyframes fadeUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ---------- NAVIGATION ---------- */
+    nav { position: fixed; top: 0; width: 100%; background: rgba(5,4,8,0.85); backdrop-filter: blur(10px); z-index: 100; display: flex; justify-content: center; padding: 15px; gap: 20px; border-bottom: 1px solid rgba(139, 92, 246, 0.2); transform: translateY(-100%); transition: 0.5s; }
+    nav.visible { transform: translateY(0); }
+    nav button { background: none; border: none; color: var(--text-dim); font-family: 'Creepster', cursive; font-size: 1.2rem; cursor: pointer; transition: 0.3s; letter-spacing: 1px; }
+    nav button:hover, nav button.active { color: var(--purple); text-shadow: 0 0 15px var(--purple-glow); transform: scale(1.1); }
+
+    /* ---------- ROUTING VIEWS ---------- */
+    .view { display: none; opacity: 0; transition: opacity 0.4s ease; padding-top: 80px; padding-bottom: 4rem; min-height: 100vh; }
+    .view.active { display: block; opacity: 1; animation: fadeIn 0.5s ease-out forwards; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* ---------- HEADER ---------- */
+    .site-header { text-align: center; padding: 3rem 1.5rem 2rem; position: relative; z-index: 5; }
+    h1 { font-family: 'Creepster', cursive; font-size: clamp(2.5rem, 8vw, 4.5rem); color: var(--text); text-shadow: 0 0 25px var(--purple-glow); letter-spacing: 3px; margin: 0.5rem 0 0.3rem; }
+    .tagline { font-size: 0.95rem; color: var(--text-dim); }
+    .stats-container { display: flex; justify-content: center; flex-wrap: wrap; gap: 10px; margin-top: 15px; }
+    .stat-badge { display: inline-flex; gap: 8px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); padding: 0.4rem 1.2rem; border-radius: 30px; font-size: 0.7rem; font-weight: 600; color: var(--red); letter-spacing: 1px; }
+    .stat-badge.green { background: rgba(16, 185, 129, 0.08); border-color: rgba(16, 185, 129, 0.2); color: var(--green); }
+
+    /* ---------- GRAVEYARD GRID ---------- */
+    .graveyard-section { max-width: 1200px; margin: 0 auto; padding: 2rem 1.5rem; position: relative; z-index: 5; }
+    .graves-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 2.5rem; }
+
+    /* Grave Card */
+    .grave-card { background: linear-gradient(145deg, var(--stone-light), var(--stone)); border-radius: 120px 120px 10px 10px; padding: 2.5rem 1.6rem 1.8rem; text-align: center; transition: 0.3s; border: 1px solid rgba(255,255,255,0.05); position: relative; cursor: pointer; box-shadow: 0 15px 30px rgba(0,0,0,0.5); }
+    .grave-card:hover { transform: translateY(-8px); box-shadow: 0 25px 40px rgba(0,0,0,0.8), 0 0 35px var(--purple-glow); border-color: rgba(139, 92, 246, 0.4); }
+    .grave-card::before { content: "✝"; position: absolute; top: -18px; left: 50%; transform: translateX(-50%); font-size: 1.5rem; color: #6b4e71; }
+    .grave-card .rip-stamp { font-family: 'Creepster', cursive; font-size: 1.8rem; color: var(--red); margin-bottom: 0.5rem; }
+    .grave-card .assignment-name { font-size: 1.2rem; font-weight: 700; background: rgba(0,0,0,0.3); display: inline-block; padding: 0.3rem 1rem; border-radius: 40px; margin-bottom: 1.2rem; }
+
+    /* Zombie Card */
+    .zombie-card { background: linear-gradient(145deg, #064e3b, #022c22); border-radius: 12px; padding: 20px; text-align: left; border: 1px solid var(--green); box-shadow: 0 0 20px var(--green-glow); position: relative; overflow: hidden; }
+    .zombie-card h3 { color: var(--green); font-size: 1.3rem; margin-bottom: 5px; }
+    .zombie-badge { position: absolute; top: 15px; right: -35px; background: var(--green); color: #000; font-size: 0.6rem; font-weight: bold; padding: 5px 40px; transform: rotate(45deg); letter-spacing: 2px; }
+
+    /* ---------- DETAIL VIEW (REVIVAL ROUTE) ---------- */
+    .detail-container { max-width: 600px; margin: 0 auto; padding: 2rem 1.5rem; }
+    .back-btn { background: transparent; border: 1px solid var(--purple); color: var(--text); padding: 0.6rem 1.5rem; border-radius: 30px; cursor: pointer; font-family: 'Inter'; margin-bottom: 2rem; transition: 0.3s; font-weight: 600; text-transform: uppercase; letter-spacing: 1px; }
+    .back-btn:hover { background: var(--purple); color: #fff; box-shadow: 0 0 15px var(--purple-glow); }
+
+    .detail-card { background: var(--bg-card); border: 1px solid rgba(139, 92, 246, 0.3); padding: 3rem 2rem; border-radius: 20px; box-shadow: 0 0 50px rgba(0,0,0,0.8); position: relative; overflow: hidden; }
+    .detail-card h1 { font-size: 2.2rem; margin-bottom: 0.5rem; color: #fff; text-shadow: none; font-family: 'Inter', sans-serif; font-weight: 700; letter-spacing: 0; }
+    .detail-meta { color: var(--red); font-weight: bold; margin-bottom: 2rem; text-transform: uppercase; letter-spacing: 2px; font-size: 0.85rem; }
+    .detail-row { background: rgba(0,0,0,0.3); padding: 15px; border-radius: 10px; margin-bottom: 15px; border-left: 3px solid var(--purple); }
+    .detail-label { font-size: 0.75rem; color: var(--text-dim); text-transform: uppercase; display: block; margin-bottom: 5px; font-weight: 600; }
+    .detail-value { font-size: 1rem; color: #fff; }
+    .detail-words { font-style: italic; color: var(--text-dim); margin-top: 20px; text-align: center; }
+
+    /* Revival Ritual Box */
+    .ritual-box { margin-top: 30px; background: rgba(16, 185, 129, 0.05); border: 1px dashed var(--green); padding: 20px; border-radius: 12px; }
+    .ritual-box h3 { font-family: 'Creepster', cursive; color: var(--green); font-size: 1.5rem; margin-bottom: 10px; letter-spacing: 1px; }
+    .ritual-box label { display: flex; align-items: flex-start; gap: 10px; font-size: 0.9rem; cursor: pointer; color: #ccc; line-height: 1.4; }
+    .ritual-box input[type="checkbox"] { margin-top: 3px; width: 18px; height: 18px; accent-color: var(--green); cursor: pointer; }
+    
+    .btn-revive { width: 100%; margin-top: 15px; padding: 12px; background: var(--green); border: none; border-radius: 8px; color: #000; font-weight: bold; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; transition: 0.3s; font-size: 1rem; }
+    .btn-revive:disabled { background: #333; color: #666; cursor: not-allowed; }
+    .btn-revive:not(:disabled):hover { box-shadow: 0 0 20px var(--green-glow); transform: translateY(-2px); }
+
+    /* ---------- FORM SECTION ---------- */
+    .form-container { max-width: 550px; margin: 0 auto; padding: 0 1.5rem; }
+    .form-card { background: var(--bg-card); border: 1px solid rgba(139, 92, 246, 0.2); border-radius: 20px; padding: 2.5rem; }
+    .form-group { margin-bottom: 1.5rem; }
+    .form-group label { display: block; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; color: var(--text-dim); margin-bottom: 8px; font-weight: 600; }
+    .form-input { width: 100%; padding: 12px; background: rgba(0,0,0,0.5); border: 1px solid #333; border-radius: 8px; color: #fff; font-family: 'Inter'; transition: 0.3s; outline: none; }
+    .form-input:focus { border-color: var(--purple); box-shadow: 0 0 15px var(--purple-glow); }
+    .bury-button { width: 100%; padding: 15px; background: linear-gradient(90deg, #6d28d9, #9333ea); border: none; border-radius: 8px; color: #fff; font-weight: bold; text-transform: uppercase; letter-spacing: 2px; cursor: pointer; transition: 0.3s; }
+    .bury-button:hover { transform: translateY(-2px); box-shadow: 0 10px 20px var(--purple-glow); }
+
+    /* ---------- TOAST ---------- */
+    .toast { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%) translateY(100px); background: #1e172b; border-left: 4px solid var(--purple); padding: 15px 25px; border-radius: 8px; font-size: 0.95rem; font-weight: 600; z-index: 2000; transition: 0.4s cubic-bezier(0.2, 0.9, 0.4, 1.1); box-shadow: 0 10px 25px rgba(0,0,0,0.5); opacity: 0; white-space: nowrap; }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
+
+    /* ---------- RESPONSIVE FIXES ---------- */
+    @media (max-width: 600px) {
+      nav { gap: 10px; padding: 15px 5px; flex-wrap: wrap; }
+      nav button { font-size: 1rem; }
+      h1 { font-size: 2.8rem; }
+      .graves-grid { grid-template-columns: 1fr; }
+      .detail-card { padding: 2rem 1.5rem; }
+      .detail-card h1 { font-size: 1.8rem; }
+      .toast { white-space: normal; width: 90%; text-align: center; font-size: 0.85rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <audio id="audio-ambient" loop>
+    <source src="https://actions.google.com/sounds/v1/horror/ambient_hum_with_distant_screams.ogg" type="audio/ogg">
+  </audio>
+  <audio id="audio-thunder">
+    <source src="https://actions.google.com/sounds/v1/weather/thunder_crack.ogg" type="audio/ogg">
+  </audio>
+
+  <div id="lightning"></div>
+  <div class="moon"></div>
+  <div class="ground-fog"></div>
+
+  <div id="intro">
+    <div id="skulls-container"></div>
+    <div id="intro-tomb">
+      <div class="rip">R.I.P.</div>
+      <div class="grave-title">DEADLINE<br>GRAVEYARD</div>
+      <div class="grave-sub">Where missed assignments rest</div>
+    </div>
+    <div class="skip-hint" onclick="enterNightmare()">⚰️ Click to Enter ⚰️</div>
+  </div>
+
+  <nav id="navbar">
+    <button class="active" onclick="switchMainView('graveyard')" id="nav-graveyard">Cemetery</button>
+    <button onclick="switchMainView('dig')" id="nav-dig">Dig Grave</button>
+    <button onclick="switchMainView('zombies')" id="nav-zombies">Resurrected</button>
+  </nav>
+
+  <div id="view-graveyard" class="view active">
+    <header class="site-header">
+      <div class="header-icon">💀</div>
+      <h1>Deadline Graveyard</h1>
+      <p class="tagline">Click a tombstone to view its tragedy or attempt a resurrection.</p>
+      <div class="stats-container">
+        <div class="stat-badge">🪦 BURIED: <span id="count-buried">0</span></div>
+        <div class="stat-badge green">🧟 REVIVED: <span id="count-revived">0</span></div>
+      </div>
+    </header>
+
+    <section class="graveyard-section">
+      <div class="graves-grid" id="graveyard-grid"></div>
+    </section>
+  </div>
+
+  <div id="view-dig" class="view">
+    <header class="site-header">
+      <div class="header-icon">⛏️</div>
+      <h1>Gravedigger's Shack</h1>
+      <p class="tagline">Bury your latest academic failure.</p>
+    </header>
+
+    <div class="form-container">
+      <div class="form-card">
+        <form id="graveForm">
+          <div class="form-group">
+            <label>Assignment Name</label>
+            <input type="text" class="form-input" id="inpName" placeholder="e.g. History Research Paper" required>
+          </div>
+          <div class="form-group">
+            <label>Date of Demise (Deadline)</label>
+            <input type="date" class="form-input" id="inpDate" required>
+          </div>
+          <div class="form-group">
+            <label>Fatal Cause (Reason)</label>
+            <input type="text" class="form-input" id="inpReason" placeholder="e.g. Fell asleep, forgot it existed" required>
+          </div>
+          <div class="form-group">
+            <label>Funny Last Words</label>
+            <textarea class="form-input" id="inpWords" rows="3" placeholder="e.g. I swear I'll do it tomorrow..." required></textarea>
+          </div>
+          <button type="submit" class="bury-button">⚰️ Bury Assignment</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-zombies" class="view">
+    <header class="site-header">
+      <div class="header-icon">🧟</div>
+      <h1 style="color: var(--green); text-shadow: 0 0 20px var(--green-glow);">Hall of Zombies</h1>
+      <p class="tagline">Tasks that defied death and were finally completed.</p>
+    </header>
+
+    <section class="graveyard-section">
+      <div class="graves-grid" id="zombie-grid"></div>
+    </section>
+  </div>
+
+  <div id="view-detail" class="view">
+    <div class="detail-container">
+      <button class="back-btn" onclick="switchMainView('graveyard')">← Back to Cemetery</button>
+      
+      <div class="detail-card">
+        <h1 id="detail-name">Assignment Name</h1>
+        <div class="detail-meta" id="detail-date">Died On: Date</div>
+        
+        <div class="detail-row">
+          <span class="detail-label">Fatal Cause</span>
+          <div class="detail-value" id="detail-reason">Reason text</div>
+        </div>
+
+        <div class="detail-words" id="detail-words">"..."</div>
+
+        <div class="ritual-box">
+          <h3>The Revival Ritual</h3>
+          <label>
+            <input type="checkbox" id="ritualCheck" onchange="toggleReviveBtn()">
+            I swear on my soul that I have actually completed and submitted this assignment to resurrect it.
+          </label>
+          <button class="btn-revive" id="btnRevive" disabled onclick="executeResurrection()">⚡ Resurrect Task</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toastMsg">Notification</div>
+
+<script>
+  // --- STATE ---
+  let tasks = [
+    { id: 1, name: "Math Calculus Homework", date: "2024-10-31", reason: "Calculated time wrong", words: "I will just guess C for everything.", status: "buried" },
+    { id: 2, name: "Science Lab Report", date: "2024-11-15", reason: "Partner ghosted me completely", words: "My hypothesis was that I'd pass...", status: "buried" },
+    { id: 3, name: "Java Programming Project", date: "2024-12-05", reason: "Infinite loop of despair", words: "It compiled on my machine.", status: "buried" },
+    { id: 4, name: "English Essay Draft", date: "2023-10-10", reason: "Writer's block for 3 weeks", words: "To submit, or not to submit.", status: "revived" }
+  ];
+
+  let currentDetailId = null;
+
+  // --- AUDIO LOGIC ---
+  const bgMusic = document.getElementById('audio-ambient');
+  const thunderSound = document.getElementById('audio-thunder');
+  bgMusic.volume = 0.3;
+  thunderSound.volume = 0.7;
+
+  function flashLightning() {
+    const flash = document.getElementById('lightning');
+    flash.style.opacity = '0.8';
+    thunderSound.currentTime = 0;
+    thunderSound.play().catch(()=>{});
+    setTimeout(() => flash.style.opacity = '0', 50);
+    setTimeout(() => flash.style.opacity = '0.3', 100);
+    setTimeout(() => flash.style.opacity = '0', 150);
+  }
+
+  // Random Lightning
+  setInterval(() => {
+    if(Math.random() > 0.8 && document.getElementById('intro').classList.contains('hidden')) {
+      flashLightning();
+    }
+  }, 12000);
+
+  // --- INTRO ---
+  let introActive = true;
+  function enterNightmare() {
+    if(!introActive) return;
+    introActive = false;
+    document.getElementById('intro').classList.add('hidden');
+    document.getElementById('navbar').classList.add('visible');
+    
+    // Play Audio (Requires user interaction)
+    bgMusic.play().catch(()=>{});
+    flashLightning();
+    
+    renderUI();
+    startAmbientAnimations();
+  }
+
+  // Create Skulls for intro
+  const skullContainer = document.getElementById('skulls-container');
+  for(let i=0; i<15; i++) {
+    let skull = document.createElement('div');
+    skull.className = 'intro-skull';
+    skull.innerText = '💀';
+    skull.style.left = Math.random() * 100 + 'vw';
+    skull.style.top = Math.random() * 100 + 'vh';
+    skull.style.animationDelay = (Math.random() * 5) + 's';
+    skull.style.fontSize = (Math.random() * 1.5 + 1) + 'rem';
+    skullContainer.appendChild(skull);
+  }
+
+  // Auto-dismiss intro fallback
+  setTimeout(() => { if(introActive) document.querySelector('.skip-hint').style.color = '#fff'; }, 5000);
+
+  // --- ROUTING / VIEWS ---
+  function switchMainView(viewId) {
+    // Nav Active State
+    document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+    if(document.getElementById('nav-' + viewId)) {
+      document.getElementById('nav-' + viewId).classList.add('active');
+    }
+
+    // Hide all views
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.remove('active');
+      setTimeout(() => v.style.display = 'none', 300);
+    });
+
+    // Show target view
+    const target = document.getElementById('view-' + viewId);
+    setTimeout(() => {
+      target.style.display = 'block';
+      setTimeout(() => target.classList.add('active'), 20);
+    }, 300);
+
+    window.scrollTo(0, 0);
+  }
+
+  // Open Detail / Revival Route
+  function openDetailRoute(id) {
+    const task = tasks.find(t => t.id === id);
+    if (!task) return;
+    currentDetailId = id;
+
+    // Populate data
+    document.getElementById('detail-name').innerText = task.name;
+    document.getElementById('detail-date').innerText = `💀 Died On: ${new Date(task.date).toLocaleDateString('en-US', { year:'numeric', month:'long', day:'numeric'})}`;
+    document.getElementById('detail-reason').innerText = task.reason;
+    document.getElementById('detail-words').innerText = `"${task.words}"`;
+    
+    // Reset Ritual Box
+    document.getElementById('ritualCheck').checked = false;
+    document.getElementById('btnRevive').disabled = true;
+
+    // Switch View bypassing Nav active state change
+    document.querySelectorAll('.view').forEach(v => {
+      v.classList.remove('active');
+      v.style.display = 'none';
+    });
+    
+    const detailView = document.getElementById('view-detail');
+    detailView.style.display = 'block';
+    setTimeout(() => detailView.classList.add('active'), 20);
+    window.scrollTo(0, 0);
+  }
+
+  // --- RENDERING ---
+  function renderUI() {
+    const graveGrid = document.getElementById('graveyard-grid');
+    const zombieGrid = document.getElementById('zombie-grid');
+    graveGrid.innerHTML = ''; zombieGrid.innerHTML = '';
+    
+    let buriedCount = 0; let revivedCount = 0;
+
+    tasks.forEach(task => {
+      const dateStr = new Date(task.date).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+      
+      if(task.status === 'buried') {
+        buriedCount++;
+        const card = document.createElement('div');
+        card.className = 'grave-card';
+        card.onclick = () => openDetailRoute(task.id);
+        card.innerHTML = `
+          <div class="rip-stamp">R.I.P.</div>
+          <div class="assignment-name">${task.name}</div>
+          <div style="font-size:0.85rem; color:#aaa; margin-bottom:5px;">💀 ${dateStr}</div>
+          <div style="font-size:0.8rem; color:#666;">Click to view tragedy</div>
+        `;
+        graveGrid.appendChild(card);
+      } else {
+        revivedCount++;
+        const card = document.createElement('div');
+        card.className = 'zombie-card';
+        card.innerHTML = `
+          <div class="zombie-badge">REVIVED</div>
+          <h3>${task.name}</h3>
+          <p style="font-size:0.85rem; color:#aaa;">Originally died on: ${dateStr}</p>
+          <p style="font-size:0.9rem; color:var(--green); margin-top:10px; font-style:italic;">"Defeated the grave."</p>
+        `;
+        zombieGrid.appendChild(card);
+      }
+    });
+
+    document.getElementById('count-buried').innerText = buriedCount;
+    document.getElementById('count-revived').innerText = revivedCount;
+
+    if(buriedCount === 0) graveGrid.innerHTML = '<p style="text-align:center; width:100%; color:#555;">No dead tasks. You are free.</p>';
+    if(revivedCount === 0) zombieGrid.innerHTML = '<p style="text-align:center; width:100%; color:#555;">No souls resurrected... yet.</p>';
+  }
+
+  // --- FORM SUBMISSION ---
+  document.getElementById('graveForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+    const newTask = {
+      id: Date.now(),
+      name: document.getElementById('inpName').value,
+      date: document.getElementById('inpDate').value,
+      reason: document.getElementById('inpReason').value,
+      words: document.getElementById('inpWords').value,
+      status: 'buried'
+    };
+    
+    tasks.unshift(newTask);
+    this.reset();
+    renderUI();
+    flashLightning();
+    showToast("⚰️ Task successfully buried.", "var(--purple)");
+    switchMainView('graveyard');
+  });
+
+  // --- REVIVAL LOGIC ---
+  function toggleReviveBtn() {
+    document.getElementById('btnRevive').disabled = !document.getElementById('ritualCheck').checked;
+  }
+
+  function executeResurrection() {
+    const taskIndex = tasks.findIndex(t => t.id === currentDetailId);
+    if(taskIndex !== -1) {
+      tasks[taskIndex].status = 'revived';
+      renderUI();
+      flashLightning();
+      showToast("🧟 Soul Resurrected Successfully!", "var(--green)");
+      switchMainView('zombies');
+    }
+  }
+
+  // --- TOAST NOTIFICATION ---
+  function showToast(msg, color) {
+    const toast = document.getElementById('toastMsg');
+    toast.innerText = msg;
+    toast.style.borderLeftColor = color;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 3500);
+  }
+
+  // --- AMBIENT ANIMATIONS ---
+  function startAmbientAnimations() {
+    const keyframes = `
+      @keyframes flyAcross {
+        0% { left: -50px; opacity: 0; transform: scaleX(1); }
+        10% { opacity: 0.8; }
+        90% { opacity: 0.8; }
+        100% { left: 105vw; opacity: 0; transform: scaleX(-1); }
+      }
+      @keyframes floatUp {
+        0% { bottom: -50px; opacity: 0; transform: rotate(0deg); }
+        20% { opacity: 0.6; }
+        80% { opacity: 0.6; }
+        100% { bottom: 110vh; opacity: 0; transform: rotate(10deg); }
+      }
+    `;
+    const style = document.createElement('style');
+    style.innerHTML = keyframes;
+    document.head.appendChild(style);
+
+    setInterval(() => {
+      const bat = document.createElement('div');
+      bat.className = 'bat-ambient';
+      bat.innerText = '🦇';
+      bat.style.top = (Math.random() * 40 + 5) + '%';
+      bat.style.animation = 'flyAcross 6s linear forwards';
+      document.body.appendChild(bat);
+      setTimeout(() => bat.remove(), 6000);
+    }, 6000);
+
+    setInterval(() => {
+      const ghost = document.createElement('div');
+      ghost.className = 'ghost-ambient';
+      ghost.innerText = '👻';
+      ghost.style.left = (Math.random() * 80 + 10) + '%';
+      ghost.style.animation = 'floatUp 8s ease-in forwards';
+      document.body.appendChild(ghost);
+      setTimeout(() => ghost.remove(), 8000);
+    }, 15000);
+  }
+</script>
+</body>
+</html>

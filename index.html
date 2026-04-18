@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BIST Bhopal — Campus Memories Map</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@200;300;400;500;600&display=swap" rel="stylesheet">
+    <style>
+        /* Base Styles */
+        *,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+        body{font-family:'Inter',sans-serif;background:#050505;color:#fff;overflow-x:hidden;line-height:1.6}
+        
+        /* Grain Overlay */
+        body::before{content:'';position:fixed;inset:0;z-index:50;pointer-events:none;opacity:.02;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E")}
+
+        /* Navigation */
+        nav{position:fixed;top:0;left:0;right:0;z-index:100;padding:1.5rem 2rem;display:flex;justify-content:space-between;align-items:center;background:linear-gradient(to bottom,rgba(0,0,0,0.8),transparent);backdrop-filter:blur(5px)}
+        .nav-brand{font-size:.75rem;font-weight:600;letter-spacing:.15em;text-transform:uppercase;display:flex;align-items:center;gap:.6rem}
+        .brand-dot{width:8px;height:8px;border-radius:50%;background:#ff3e3e;box-shadow:0 0 10px #ff3e3e;animation:pulse 2s infinite}
+        @keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+
+        /* Hero Section */
+        .hero{min-height:80vh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:0 1.5rem;position:relative}
+        .hero-badge{padding:.4rem 1rem;border:1px solid rgba(255,255,255,0.1);border-radius:20px;font-size:.65rem;text-transform:uppercase;letter-spacing:2px;color:#888;margin-bottom:2rem}
+        .hero h1{font-size:clamp(2.5rem,8vw,5.5rem);font-weight:300;line-height:1;margin-bottom:1.5rem;letter-spacing:-0.03em}
+        .hero h1 span{font-weight:600;background:linear-gradient(to right, #fff, #666);-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+        .hero p{max-width:600px;color:#a1a1aa;font-weight:300;font-size:1.1rem}
+
+        /* Interactive Map Section */
+        .map-section{padding:5rem 1.5rem;max-width:1100px;margin:0 auto}
+        .section-title{text-align:center;margin-bottom:4rem}
+        .section-title h2{font-size:2rem;font-weight:300;margin-bottom:1rem}
+        
+        .map-container{position:relative;border-radius:20px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);box-shadow:0 30px 60px rgba(0,0,0,0.5)}
+        .main-map-img{width:100%;display:block;filter:brightness(0.8) contrast(1.1)}
+        
+        /* Map Pins */
+        .pin{position:absolute;width:30px;height:30px;cursor:pointer;transform:translate(-50%, -50%);z-index:10;transition:all 0.3s ease}
+        .pin::after{content:'';position:absolute;inset:0;background:#ff3e3e;border-radius:50%;border:2px solid white;box-shadow:0 0 15px rgba(255,62,62,0.6)}
+        .pin:hover{transform:translate(-50%, -50%) scale(1.4)}
+        .pin-label{position:absolute;bottom:40px;left:50%;transform:translateX(-50%);background:rgba(0,0,0,0.85);padding:5px 12px;border-radius:5px;font-size:0.7rem;white-space:nowrap;opacity:0;transition:0.3s;pointer-events:none;border:1px solid rgba(255,255,255,0.1)}
+        .pin:hover .pin-label{opacity:1;bottom:45px}
+
+        /* Walkthrough Grid */
+        .walk-grid{display:grid;grid-template-columns:repeat(auto-fit, minmax(300px, 1fr));gap:2rem;margin-top:5rem}
+        .card{background:#111;border-radius:15px;overflow:hidden;border:1px solid #222;transition:0.4s;cursor:pointer}
+        .card:hover{transform:translateY(-10px);border-color:#444}
+        .card-img{width:100%;height:200px;object-fit:cover;filter:grayscale(0.3)}
+        .card-content{padding:1.5rem}
+        .card-tag{font-size:0.6rem;text-transform:uppercase;color:#ff3e3e;letter-spacing:1px;margin-bottom:0.5rem;display:block}
+        .card h3{margin-bottom:0.8rem;font-weight:500}
+        .card p{font-size:0.9rem;color:#888;font-weight:300}
+
+        /* Modal */
+        .modal{position:fixed;inset:0;background:rgba(0,0,0,0.9);z-index:200;display:none;align-items:center;justify-content:center;padding:2rem;backdrop-filter:blur(10px)}
+        .modal.active{display:flex}
+        .modal-content{background:#111;max-width:800px;width:100%;border-radius:20px;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;position:relative}
+        .modal-img{width:100%;height:100%;object-fit:cover}
+        .modal-info{padding:3rem;display:flex;flex-direction:column;justify-content:center}
+        .close-modal{position:absolute;top:20px;right:20px;background:none;border:none;color:white;font-size:1.5rem;cursor:pointer}
+
+        footer{text-align:center;padding:4rem 0;color:#444;font-size:0.7rem;letter-spacing:1px}
+
+        @media (max-width: 768px) {
+            .modal-content{grid-template-columns:1fr}
+            .modal-img{height:250px}
+            .modal-info{padding:2rem}
+        }
+    </style>
+</head>
+<body>
+
+<nav>
+    <div class="nav-brand"><span class="brand-dot"></span>Bansal Memories</div>
+    <div style="font-size: 0.6rem; color: #555; text-align: right;">BIST BHOPAL<br>EST. 2000</div>
+</nav>
+
+<section class="hero">
+    <div class="hero-badge">✦ 2026 Archive Experience</div>
+    <h1>The Map of<br><span>Bansal Moments</span></h1>
+    <p>A digital stroll through the corridors, courtyards, and cafes of Bansal Institute of Science & Technology. Every corner has a story.</p>
+</section>
+
+<section class="map-section">
+    <div class="section-title">
+        <h2>Interactive Campus Map</h2>
+        <p style="color:#666">Click a pin to unlock a memory</p>
+    </div>
+
+    <div class="map-container">
+        <!-- Aerial View Image -->
+        <img src="https://z-cdn-media.chatglm.cn/files/38bfc99e-d1b1-44d6-bd75-1935a4ee79d2.png?auth_key=1875802660-f941a27320574f92933d8b53ef2265ad-0-6c87abdd5f5e5059bdb787831e25db34" alt="Campus Map" class="main-map-img">
+        
+        <!-- Pins -->
+        <div class="pin" style="top: 40%; left: 25%;" onclick="openModal(0)">
+            <div class="pin-label">Central Library</div>
+        </div>
+        <div class="pin" style="top: 85%; left: 20%;" onclick="openModal(1)">
+            <div class="pin-label">College Canteen</div>
+        </div>
+        <div class="pin" style="top: 45%; left: 55%;" onclick="openModal(2)">
+            <div class="pin-label">Central Courtyard</div>
+        </div>
+        <div class="pin" style="top: 65%; left: 80%;" onclick="openModal(3)">
+            <div class="pin-label">The Grounds</div>
+        </div>
+    </div>
+
+    <div class="walk-grid">
+        <div class="card" onclick="openModal(0)">
+            <img src="https://z-cdn-media.chatglm.cn/files/b2ea10bb-3ab1-4ebc-8c76-b1ef23c94600.jpg?auth_key=1875801553-1e027b252fba4ab0836b81aa731eef5c-0-97c6205187c95d2226355506301804e1" class="card-img">
+            <div class="card-content">
+                <span class="card-tag">Academic Sanctuary</span>
+                <h3>Central Library</h3>
+                <p>The quiet hum of exam preparation and the rows of endless knowledge.</p>
+            </div>
+        </div>
+        <div class="card" onclick="openModal(1)">
+            <img src="https://z-cdn-media.chatglm.cn/files/3f45c0e1-7542-4073-82ac-2cac8139b476.jpg?auth_key=1875801553-519b9f33ae9a4d6395fad2a0381990a3-0-53cb5a5e13f63a33f31501bb8075cbba" class="card-img">
+            <div class="card-content">
+                <span class="card-tag">Social Hub</span>
+                <h3>College Canteen</h3>
+                <p>Where lifelong friendships were forged over chai and hot samosas.</p>
+            </div>
+        </div>
+        <div class="card" onclick="openModal(2)">
+            <img src="https://z-cdn-media.chatglm.cn/files/74399e46-5040-4710-85e2-8b7f6ad2e45a.jpg?auth_key=1875801553-5640c8595d3e41f9a6ba83c4e58d4eec-0-bb7e76218ecf69a680ee6a77bcbf1d29" class="card-img">
+            <div class="card-content">
+                <span class="card-tag">Heart of Campus</span>
+                <h3>Central Courtyard</h3>
+                <p>Iconic walkways and the lush green lawn that held every group photo.</p>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Memory Modal -->
+<div class="modal" id="memoryModal">
+    <div class="modal-content">
+        <button class="close-modal" onclick="closeModal()">&times;</button>
+        <img src="" alt="Memory" id="modalImg" class="modal-img">
+        <div class="modal-info">
+            <span id="modalTag" style="color:#ff3e3e; font-size:0.7rem; text-transform:uppercase; margin-bottom:1rem; display:block"></span>
+            <h2 id="modalTitle" style="margin-bottom:1.5rem"></h2>
+            <p id="modalDesc" style="color:#aaa; font-weight:300; font-size:1rem"></p>
+        </div>
+    </div>
+</div>
+
+<footer>
+    BIST BHOPAL CAMPUS ARCHIVE &copy; 2026<br>
+    MADE WITH ❤️ FOR THE MEMORIES
+</footer>
+
+<script>
+    const data = [
+        {
+            title: "Central Library",
+            tag: "The Quiet Zone",
+            desc: "Those shelves labeled 'FIRST YEAR CE' saw more naps than study sessions. The therapeutic silence of the library was our refuge during the chaos of submission weeks.",
+            img: "https://z-cdn-media.chatglm.cn/files/b2ea10bb-3ab1-4ebc-8c76-b1ef23c94600.jpg?auth_key=1875801553-1e027b252fba4ab0836b81aa731eef5c-0-97c6205187c95d2226355506301804e1"
+        },
+        {
+            title: "The Canteen",
+            tag: "Fueling Dreams",
+            desc: "The yellow walls and long benches witnessed every birthday celebration and bunked lecture. No 5-star restaurant can ever compete with the taste of Bansal's canteen chai.",
+            img: "https://z-cdn-media.chatglm.cn/files/3f45c0e1-7542-4073-82ac-2cac8139b476.jpg?auth_key=1875801553-519b9f33ae9a4d6395fad2a0381990a3-0-53cb5a5e13f63a33f31501bb8075cbba"
+        },
+        {
+            title: "Central Courtyard",
+            tag: "The Meeting Point",
+            desc: "The lush green heart of BIST. The bridge walkways and the open grass area were where we spent hours just talking, debating, and creating memories that last a lifetime.",
+            img: "https://z-cdn-media.chatglm.cn/files/74399e46-5040-4710-85e2-8b7f6ad2e45a.jpg?auth_key=1875801553-5640c8595d3e41f9a6ba83c4e58d4eec-0-bb7e76218ecf69a680ee6a77bcbf1d29"
+        },
+        {
+            title: "Open Ground",
+            tag: "Victories & Sunsets",
+            desc: "From inter-branch cricket finals to the annual fests. There's nothing like screaming at the top of your lungs while the Bhopal sunset paints the sky orange.",
+            img: "https://z-cdn-media.chatglm.cn/files/38bfc99e-d1b1-44d6-bd75-1935a4ee79d2.png?auth_key=1875802660-f941a27320574f92933d8b53ef2265ad-0-6c87abdd5f5e5059bdb787831e25db34"
+        }
+    ];
+
+    function openModal(index) {
+        const item = data[index];
+        document.getElementById('modalTitle').innerText = item.title;
+        document.getElementById('modalTag').innerText = item.tag;
+        document.getElementById('modalDesc').innerText = item.desc;
+        document.getElementById('modalImg').src = item.img;
+        document.getElementById('memoryModal').classList.add('active');
+        document.body.style.overflow = 'hidden';
+    }
+
+    function closeModal() {
+        document.getElementById('memoryModal').classList.remove('active');
+        document.body.style.overflow = 'auto';
+    }
+
+    // Close on click outside
+    window.onclick = function(event) {
+        const modal = document.getElementById('memoryModal');
+        if (event.target == modal) {
+            closeModal();
+        }
+    }
+</script>
+
+</body>
+</html>
