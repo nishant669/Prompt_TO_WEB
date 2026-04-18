@@ -1,57 +1,49 @@
-<p align="center">
-  <img src="header.svg" width="800" alt="Prompt TO WEB Banner" />
-</p>
+<div align="center">
+  <img src="header.svg" alt="Prompt To Web Banner" />
 
-<p align="center">
-  <img src="https://img.shields.io/badge/Status-Active-brightgreen?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Task-AI_Generation-blueviolet?style=for-the-badge" />
-  <img src="https://img.shields.io/badge/Build-Production_Ready-orange?style=for-the-badge" />
-</p>
+  <p>
+    <img src="https://img.shields.io/github/stars/nishant669/Prompt_TO_WEB?style=for-the-badge&color=38bdf8&logo=github" />
+    <img src="https://img.shields.io/badge/Maintained%3F-Yes-238636?style=for-the-badge" />
+    <img src="https://img.shields.io/badge/Built_With-AI_Assistance-818cf8?style=for-the-badge&logo=openai" />
+  </p>
+</div>
 
 ---
 
-## 🛠️ The Mission
-This project was built during a high-speed **College AI Challenge**. The task: convert complex human prompts into functional web structures using only AI-assisted workflows.
+## 🎯 Project Overview
+**Prompt TO WEB** is an experimental playground where human creativity meets AI efficiency. Designed for the 2026 College AI Challenge, this project focuses on high-speed UI prototyping.
 
-### 🕹️ Interactive Project Breakdown
-*Click the sections below to explore the architecture.*
+### ⚡ Technical Arsenal
+| Category | Tech Stack |
+| :--- | :--- |
+| **Engine** | HTML5 / CSS3 / JavaScript |
+| **Styling** | Modern CSS Grid & Flexbox |
+| **Workflow** | AI-Driven Code Synthesis |
+| **Editor** | VS Code / GitHub Codespaces |
 
-<details>
-<summary><b>📂 File Structure & Logic</b></summary>
-<br>
+---
 
-| File | Purpose | Tech |
-| :--- | :--- | :--- |
-| `index.html` | Core UI | HTML5/Tailwind |
-| `new_task.html` | Dynamic Inputs | Vanilla JS |
-| `text` | Prompt History | Markdown |
+## 🛠️ Key Components
+
+<details open>
+<summary><b>🖥️ Main Interface (index.html)</b></summary>
+The entry point featuring a clean, responsive layout optimized for user engagement and accessibility.
 </details>
 
 <details>
-<summary><b>⚡ AI Workflow Optimization</b></summary>
-<br>
-The development followed a 3-step AI pipeline:
-1. **Prompt Engineering:** Structuring the layout requirements.
-2. **Code Generation:** Utilizing LLMs for rapid prototyping.
-3. **Refinement:** Manual optimization for performance and UI consistency.
+<summary><b>📝 Task Manager (new_task.html)</b></summary>
+A dynamic module built to handle data inputs and interactive state management without heavy frameworks.
 </details>
 
 <details>
-<summary><b>🎨 UI/UX Features</b></summary>
-<br>
-- **Dark Mode Aesthetic:** Built for modern developer eyes.
-- **Glassmorphism:** Using backdrop blurs for a premium feel.
-- **Mobile First:** Fully responsive layouts across all devices.
+<summary><b>🤖 AI Prompt Logic</b></summary>
+Contains the prompt engineering strategy used to generate the structural components of this application.
 </details>
 
 ---
 
-## 🚀 Deployment
+## 🚀 Installation & Usage
 
-To view the project locally:
-```bash
-# Clone the repo
-git clone [https://github.com/nishant669/Prompt_TO_WEB.git](https://github.com/nishant669/Prompt_TO_WEB.git)
-
-# Open index.html
-start index.html
+1. **Clone the Repo**
+   ```bash
+   git clone [https://github.com/nishant669/Prompt_TO_WEB.git](https://github.com/nishant669/Prompt_TO_WEB.git)
