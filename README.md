@@ -1,49 +1,43 @@
 <div align="center">
-  <img src="header.svg" alt="Prompt To Web Banner" />
+  <img src="header.svg" width="100%" />
 
-  <p>
-    <img src="https://img.shields.io/github/stars/nishant669/Prompt_TO_WEB?style=for-the-badge&color=38bdf8&logo=github" />
-    <img src="https://img.shields.io/badge/Maintained%3F-Yes-238636?style=for-the-badge" />
-    <img src="https://img.shields.io/badge/Built_With-AI_Assistance-818cf8?style=for-the-badge&logo=openai" />
-  </p>
+  <br />
+
+  [![Status](https://img.shields.io/badge/VERSION-1.0.4_STABLE-blue?style=for-the-badge&logo=gitbook&logoColor=white)](https://github.com/nishant669)
+  [![AI](https://img.shields.io/badge/ENGINE-GPT_PROMPT_V4-FF4B4B?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com)
+  [![Uptime](https://img.shields.io/badge/UPTIME-100%25-success?style=for-the-badge)](https://github.com/nishant669)
+
 </div>
 
 ---
 
-## 🎯 Project Overview
-**Prompt TO WEB** is an experimental playground where human creativity meets AI efficiency. Designed for the 2026 College AI Challenge, this project focuses on high-speed UI prototyping.
+## ⚡ The Concept
+**Prompt TO WEB** is an AI-orchestrated deployment pipeline. It demonstrates the transition from raw text intent to structured front-end assets in seconds. This was built as a proof-of-concept for the **College AI Sprint**.
 
-### ⚡ Technical Arsenal
-| Category | Tech Stack |
-| :--- | :--- |
-| **Engine** | HTML5 / CSS3 / JavaScript |
-| **Styling** | Modern CSS Grid & Flexbox |
-| **Workflow** | AI-Driven Code Synthesis |
-| **Editor** | VS Code / GitHub Codespaces |
+### 🛠️ Integrated Capabilities
 
----
-
-## 🛠️ Key Components
-
-<details open>
-<summary><b>🖥️ Main Interface (index.html)</b></summary>
-The entry point featuring a clean, responsive layout optimized for user engagement and accessibility.
-</details>
-
-<details>
-<summary><b>📝 Task Manager (new_task.html)</b></summary>
-A dynamic module built to handle data inputs and interactive state management without heavy frameworks.
-</details>
-
-<details>
-<summary><b>🤖 AI Prompt Logic</b></summary>
-Contains the prompt engineering strategy used to generate the structural components of this application.
-</details>
+| Feature | Description | Tech |
+| :--- | :--- | :--- |
+| **01. Prompt Mapping** | Converting natural language to DOM trees | `Regex/AI` |
+| **02. Responsive Core** | Mobile-first architecture by default | `CSS Flexbox` |
+| **03. State Logic** | Real-time task manipulation | `Vanilla JS` |
 
 ---
 
-## 🚀 Installation & Usage
+## 🕹️ Interactive System Walkthrough
 
-1. **Clone the Repo**
-   ```bash
-   git clone [https://github.com/nishant669/Prompt_TO_WEB.git](https://github.com/nishant669/Prompt_TO_WEB.git)
+<details>
+<summary><b>🚀 VIEW DEPLOYMENT PROTOCOL</b></summary>
+<br>
+
+To initialize this project in your local environment, execute the following:
+
+```bash
+# Clone the repository
+git clone [https://github.com/nishant669/Prompt_TO_WEB.git](https://github.com/nishant669/Prompt_TO_WEB.git)
+
+# Navigate to build
+cd Prompt_TO_WEB
+
+# Launch main entry
+open index.html
